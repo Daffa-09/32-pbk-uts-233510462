@@ -4,13 +4,17 @@
 
     <form @submit.prevent="tambahKegiatan">
       <input v-model="kegiatanBaru" placeholder="Nama kegiatan" required />
+      <input v-model="waktuBaru" type="time" required />
       <button type="submit">Tambah</button>
     </form>
 
     <ul>
       <li v-for="(kegiatan, index) in daftarKegiatan" :key="index">
         <input type="checkbox" v-model="kegiatan.selesai" />
-        <span>{{ kegiatan.nama }}</span>
+        <div class="info">
+          <span>{{ kegiatan.nama }}</span>
+          <small>{{ kegiatan.waktu }}</small>
+        </div>
       </li>
     </ul>
   </div>
@@ -20,15 +24,18 @@
 import { ref } from 'vue'
 
 const kegiatanBaru = ref('')
+const waktuBaru = ref('')
 const daftarKegiatan = ref([])
 
 const tambahKegiatan = () => {
-  if (kegiatanBaru.value.trim()) {
+  if (kegiatanBaru.value.trim() && waktuBaru.value) {
     daftarKegiatan.value.push({
       nama: kegiatanBaru.value,
+      waktu: waktuBaru.value,
       selesai: false,
     })
     kegiatanBaru.value = ''
+    waktuBaru.value = ''
   }
 }
 </script>
@@ -41,7 +48,7 @@ const tambahKegiatan = () => {
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: #000; /* Warna default hitam */
+  color: #000;
 }
 
 h1 {
@@ -52,12 +59,13 @@ h1 {
 
 form {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-input[type="text"] {
-  flex: 1;
+input[type="text"],
+input[type="time"] {
   padding: 0.5rem;
   font-size: 1rem;
   border: 1px solid #ccc;
@@ -87,11 +95,17 @@ ul {
 li {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
 
-span {
-  color: #000;
+.info {
+  display: flex;
+  flex-direction: column;
+}
+
+.info small {
+  font-size: 0.8rem;
+  color: #333;
 }
 </style>
