@@ -8,8 +8,15 @@
       <button type="submit">Tambah</button>
     </form>
 
+    <div class="filter">
+      <label>
+        <input type="checkbox" v-model="hanyaBelumSelesai" />
+        Tampilkan hanya yang belum selesai
+      </label>
+    </div>
+
     <ul>
-      <li v-for="(kegiatan, index) in daftarKegiatan" :key="index">
+      <li v-for="(kegiatan, index) in kegiatanTersaring" :key="index">
         <input type="checkbox" v-model="kegiatan.selesai" />
         <div class="info">
           <span>{{ kegiatan.nama }}</span>
@@ -21,11 +28,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const kegiatanBaru = ref('')
 const waktuBaru = ref('')
 const daftarKegiatan = ref([])
+const hanyaBelumSelesai = ref(false)
 
 const tambahKegiatan = () => {
   if (kegiatanBaru.value.trim() && waktuBaru.value) {
@@ -38,6 +46,12 @@ const tambahKegiatan = () => {
     waktuBaru.value = ''
   }
 }
+
+const kegiatanTersaring = computed(() => {
+  return hanyaBelumSelesai.value
+    ? daftarKegiatan.value.filter(k => !k.selesai)
+    : daftarKegiatan.value
+})
 </script>
 
 <style scoped>
@@ -84,6 +98,11 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.filter {
+  margin: 1rem 0;
+  text-align: center;
 }
 
 ul {
