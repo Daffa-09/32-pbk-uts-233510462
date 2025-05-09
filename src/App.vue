@@ -22,6 +22,10 @@
           <span>{{ kegiatan.nama }}</span>
           <small>{{ kegiatan.waktu }}</small>
         </div>
+        <button class="pengingat-btn" @click="togglePengingat(kegiatan)">
+          <span v-if="kegiatan.pengingat">🔔</span>
+          <span v-else>🔕</span>
+        </button>
       </li>
     </ul>
   </div>
@@ -41,10 +45,15 @@ const tambahKegiatan = () => {
       nama: kegiatanBaru.value,
       waktu: waktuBaru.value,
       selesai: false,
+      pengingat: false, // fitur baru
     })
     kegiatanBaru.value = ''
     waktuBaru.value = ''
   }
+}
+
+const togglePengingat = (kegiatan) => {
+  kegiatan.pengingat = !kegiatan.pengingat
 }
 
 const kegiatanTersaring = computed(() => {
@@ -68,7 +77,6 @@ const kegiatanTersaring = computed(() => {
 h1 {
   text-align: center;
   margin-bottom: 1.25rem;
-  color: #000;
 }
 
 form {
@@ -108,17 +116,21 @@ button:hover {
 ul {
   list-style: none;
   padding: 0;
-  color: #000;
 }
 
 li {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+  background-color: #f1f1f1;
+  padding: 0.75rem;
+  border-radius: 8px;
 }
 
 .info {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
@@ -126,5 +138,17 @@ li {
 .info small {
   font-size: 0.8rem;
   color: #333;
+}
+
+.pengingat-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #007bff;
+}
+
+.pengingat-btn:hover {
+  color: #0056b3;
 }
 </style>
