@@ -1,49 +1,36 @@
 <template>
   <div class="container">
-    <h1>Daftar Kegiatan</h1>
+    <h1>APLIKASI KEGIATAN</h1>
 
-    <form @submit.prevent="tambahKegiatan">
+    <form @submit.prevent="addKegiatan">
       <input v-model="kegiatanBaru" placeholder="Nama kegiatan" required />
       <input v-model="waktuBaru" type="time" required />
-      <button type="submit">Tambah</button>
+      <button type="submit">TAMBAH</button>
     </form>
 
     <div class="filter">
       <label>
-        <input type="checkbox" v-model="hanyaBelumSelesai" />
-        Tampilkan hanya yang belum selesai
+        <input type="checkbox" v-model="filterBelumSelesai" />
+        TAMPILKAN YANG BELUM SELESAI
       </label>
     </div>
 
     <ul>
-      <li v-for="(kegiatan, index) in kegiatanTersaring" :key="index">
+      <li v-for="kegiatan in kegiatanTersaring" :key="kegiatan.id">
         <input type="checkbox" v-model="kegiatan.selesai" />
         <div class="info">
-          <span>{{ kegiatan.nama }}</span>
-          <small>{{ kegiatan.waktu }}</small>
+          <span :class="{ selesai: kegiatan.selesai }">{{ kegiatan.nama }}</span>
+          <small>{{ formatWaktu(kegiatan.waktu) }}</small>
         </div>
-        <button class="pengingat-btn" @click="togglePengingat(kegiatan)">
-          <span v-if="kegiatan.pengingat">🔔</span>
-          <span v-else>🔕</span>
-        </button>
-        <button class="edit-btn" @click="editKegiatan(index)">
-          Edit
-        </button>
-        <button class="hapus-btn" @click="hapusKegiatan(index)">
-          Hapus
-        </button>
+        <div>
+          <button class="pengingat-btn" @click="togglePengingat(kegiatan)">
+            <span v-if="kegiatan.pengingat">🔔</span>
+            <span v-else>🔕</span>
+          </button>
+          <button class="hapus-btn" @click="hapusKegiatan(kegiatan.id)">HAPUS</button>
+        </div>
       </li>
     </ul>
-
-    <div v-if="isEditing" class="edit-form">
-      <h2>Edit Kegiatan</h2>
-      <form @submit.prevent="updateKegiatan">
-        <input v-model="editKegiatanBaru" placeholder="Nama kegiatan" required />
-        <input v-model="editWaktuBaru" type="time" required />
-        <button type="submit">Update</button>
-        <button @click="cancelEdit">Cancel</button>
-      </form>
-    </div>
   </div>
 </template>
 
@@ -53,16 +40,12 @@ import { ref, computed } from 'vue'
 const kegiatanBaru = ref('')
 const waktuBaru = ref('')
 const daftarKegiatan = ref([])
-const hanyaBelumSelesai = ref(false)
+const filterBelumSelesai = ref(false)
 
-const isEditing = ref(false)
-const editIndex = ref(null)
-const editKegiatanBaru = ref('')
-const editWaktuBaru = ref('')
-
-const tambahKegiatan = () => {
+const addKegiatan = () => {
   if (kegiatanBaru.value.trim() && waktuBaru.value) {
     daftarKegiatan.value.push({
+      id: Date.now() + Math.random(),
       nama: kegiatanBaru.value,
       waktu: waktuBaru.value,
       selesai: false,
@@ -73,169 +56,186 @@ const tambahKegiatan = () => {
   }
 }
 
+const hapusKegiatan = (id) => {
+  daftarKegiatan.value = daftarKegiatan.value.filter(k => k.id !== id)
+}
+
 const togglePengingat = (kegiatan) => {
   kegiatan.pengingat = !kegiatan.pengingat
 }
 
-const hapusKegiatan = (index) => {
-  daftarKegiatan.value.splice(index, 1)
-}
-
-const editKegiatan = (index) => {
-  const kegiatan = daftarKegiatan.value[index]
-  editIndex.value = index
-  editKegiatanBaru.value = kegiatan.nama
-  editWaktuBaru.value = kegiatan.waktu
-  isEditing.value = true
-}
-
-const updateKegiatan = () => {
-  if (editKegiatanBaru.value.trim() && editWaktuBaru.value) {
-    daftarKegiatan.value[editIndex.value].nama = editKegiatanBaru.value
-    daftarKegiatan.value[editIndex.value].waktu = editWaktuBaru.value
-    cancelEdit()
-  }
-}
-
-const cancelEdit = () => {
-  isEditing.value = false
-  editKegiatanBaru.value = ''
-  editWaktuBaru.value = ''
-}
-
 const kegiatanTersaring = computed(() => {
-  return hanyaBelumSelesai.value
+  const filtered = filterBelumSelesai.value
     ? daftarKegiatan.value.filter(k => !k.selesai)
     : daftarKegiatan.value
+
+  return [...filtered].sort((a, b) => a.waktu.localeCompare(b.waktu))
 })
+
+const formatWaktu = (waktu) => {
+  const [jam, menit] = waktu.split(':')
+  return `${jam}:${menit}`
+}
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f2f6f9;
+  margin: 0;
+  color: #212529;
+  text-transform: uppercase;
+}
+
 .container {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: #000;
+  max-width: 550px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.75rem;
+  font-size: 1.8rem;
+  color: #2c3e50;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.8rem;
+  margin-bottom: 1.2rem;
 }
 
 input[type="text"],
 input[type="time"] {
-  padding: 0.5rem;
+  padding: 0.7rem 1rem;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  color: #000;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  transition: border-color 0.3s;
+  color: #212529;
+  text-transform: uppercase;
+}
+
+input:focus {
+  border-color: #00b894;
+  outline: none;
 }
 
 button {
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: #fff;
+  padding: 0.6rem 1rem;
+  background-color: #00b894;
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.3s;
+  text-transform: uppercase;
 }
 
 button:hover {
-  background-color: #0056b3;
-}
-
-.filter {
-  margin: 1rem 0;
-  text-align: center;
+  background-color: #019270;
 }
 
 ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  background-color: #f1f1f1;
-  padding: 0.75rem;
-  border-radius: 8px;
+  justify-content: space-between;
+  background-color: #f7fafd;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: background 0.3s;
+}
+
+li:hover {
+  background-color: #eef4f7;
 }
 
 .info {
-  flex-grow: 1;
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
+.info span {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #212529;
+  transition: color 0.3s;
+  text-transform: uppercase;
+}
+
 .info small {
-  font-size: 0.8rem;
-  color: #333;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 3px;
+  text-transform: uppercase;
 }
 
-.pengingat-btn {
-  background: none;
-  border: none;
+.selesai {
+  text-decoration: line-through;
+  color: #95a5a6;
+  opacity: 0.7;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.2);
+  accent-color: #00b894;
   cursor: pointer;
-  font-size: 1.3rem;
-  color: #007bff;
 }
 
-.pengingat-btn:hover {
-  color: #0056b3;
+.filter {
+  margin: 1.25rem 0;
+  text-align: center;
 }
 
+.filter label {
+  font-weight: 500;
+  color: #212529;
+  text-transform: uppercase;
+}
+
+.pengingat-btn,
 .hapus-btn {
   background: none;
   border: none;
-  cursor: pointer;
   font-size: 1rem;
-  color: #dc3545;
+  cursor: pointer;
+  transition: color 0.3s;
+  text-transform: uppercase;
 }
 
+.pengingat-btn {
+  color: #00b894;
+}
+.pengingat-btn:hover {
+  color: #019270;
+}
+
+.hapus-btn {
+  color: #e74c3c;
+}
 .hapus-btn:hover {
-  color: #c82333;
-}
-
-.edit-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #28a745;
-}
-
-.edit-btn:hover {
-  color: #218838;
-}
-
-.edit-form {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.edit-form input {
-  margin-bottom: 1rem;
-}
-
-.edit-form button {
-  margin-right: 0.5rem;
+  color: #c0392b;
 }
 </style>
